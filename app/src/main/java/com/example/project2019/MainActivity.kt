@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
         val username = username.text.toString()
         val password = password.text.toString()
 
-        connect("http://2adf4fa3.ngrok.io/api/", username, password)
+        connect("https://crmproject2019.herokuapp.com/api/", username, password)
     }
 
     fun connect(url: String, username: String, password: String) {

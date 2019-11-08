@@ -17,6 +17,7 @@ import okhttp3.FormBody
 import okhttp3.RequestBody
 import java.nio.charset.Charset
 import android.widget.EditText
+import androidx.core.content.ContextCompat.startActivity
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -49,11 +50,13 @@ class MainActivity : AppCompatActivity() {
 
         client.newCall(request).enqueue(object : Callback {
             override fun onResponse(call: okhttp3.Call, response: Response) {
-                val user =  response.body()?.string()
-                val secondwindow = Intent (this@MainActivity, Main2Activity::class.java)
-                secondwindow.putExtra(Main2Activity.USER, user)
-                startActivity(secondwindow)
-            }
+                if (response.code() == 200) {
+                    val user = response.body()?.string()
+                    val secondwindow = Intent(this@MainActivity, Main2Activity::class.java)
+                    secondwindow.putExtra(Main2Activity.USER, user)
+                    startActivity(secondwindow)
+                }
+                }
 
             override fun onFailure(call: okhttp3.Call, e: IOException) {
                 println("fail")

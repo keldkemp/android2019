@@ -12,10 +12,10 @@
             android:inputType="textEmailAddress"
             android:ems="10"
             android:id="@+id/username"
-            android:hint="login" android:layout_marginTop="92dp" android:layout_marginBottom="25dp"
+            android:hint="login" android:layout_marginTop="8dp" android:layout_marginBottom="25dp"
             app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toTopOf="@+id/password"
-            app:layout_constraintTop_toTopOf="parent" android:layout_marginEnd="60dp"
-    />
+            android:layout_marginEnd="60dp"
+            app:layout_constraintTop_toBottomOf="@+id/textView7"/>
     <EditText
             android:layout_width="287dp"
             android:layout_height="wrap_content"
@@ -34,4 +34,11 @@
             android:layout_marginBottom="250dp"
             app:layout_constraintEnd_toEndOf="@+id/password" app:layout_constraintStart_toStartOf="@+id/password"
             app:layout_constraintBottom_toBottomOf="parent"/>
+    <TextView
+            android:layout_width="183dp"
+            android:layout_height="40dp"
+            android:id="@+id/textView7" android:layout_marginTop="64dp"
+            app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="8dp" app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="8dp"
+    />
 </androidx.constraintlayout.widget.ConstraintLayout>

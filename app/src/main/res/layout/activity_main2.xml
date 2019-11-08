@@ -82,4 +82,15 @@
             android:layout_height="35dp"
             android:id="@+id/textView9" app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="123dp" app:layout_constraintTop_toTopOf="parent" android:textStyle="bold"/>
+    <Button
+            android:text="Назад"
+            android:onClick="exit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/button_exit" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/textView6" app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="8dp" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="8dp" android:layout_marginBottom="50dp"
+            app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintHorizontal_bias="0.498"
+            app:layout_constraintVertical_bias="0.17"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -3,6 +3,7 @@ package com.example.project2019
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main2.*
 import kotlinx.android.synthetic.main.activity_main2.view.*
@@ -13,6 +14,10 @@ class Main2Activity : AppCompatActivity() {
 
     companion object {
         const val USER = "user"
+    }
+
+    fun exit(view: View) {
+        this.finish()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

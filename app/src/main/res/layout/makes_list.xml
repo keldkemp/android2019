@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:id="@+id/makes_layout">
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white">
+
+        <TextView
+                android:id="@+id/makes_list_discipline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:color="@android:color/black"/>
+
+        <TextView
+                android:id="@+id/makes_list_make"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:color="#383030"/>
+
+        <TextView
+                android:id="@+id/makes_list_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:color="@android:color/black"/>
+        <TextView
+                android:id="@+id/makes_list_teacher"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:color="@android:color/black"
+                android:text="@string/default_teacher"
+                android:paddingTop="10dp"
+                android:visibility="gone"/>
+        <TextView
+                android:id="@+id/makes_list_trem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:color="@android:color/black"
+                android:paddingTop="10dp"
+                android:visibility="gone"/>
+
+    </LinearLayout>
+</LinearLayout>

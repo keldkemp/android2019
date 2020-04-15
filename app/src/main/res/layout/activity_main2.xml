@@ -5,7 +5,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".Main2Activity" android:background="#00BFFF">
+        tools:context=".Main2Activity" android:background="@android:color/white">
 
 
 
@@ -15,9 +15,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            app:itemBackground="@color/colorPrimary"
+            android:background="@color/colorPrimary"
             app:itemIconTint="@color/bottom_navigation_item_background_colors"
-            app:itemTextColor="@color/bottom_navigation_item_background_colors"
+            app:itemTextColor="@color/bottom_navigation_text_background_colors"
             app:menu="@menu/navigation"/>
 
 
@@ -25,14 +25,15 @@
 <LinearLayout
         android:id="@+id/linear_fragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-    <fragment
-            android:name="com.example.project2019.Sessions"
+        android:layout_height="match_parent"
+        android:background="@android:color/darker_gray"
+        android:layout_above="@id/bottom_navigation">
+    <FrameLayout
             android:id="@+id/fr_sessions"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-    </fragment>
+    </FrameLayout>
 </LinearLayout>
 
 

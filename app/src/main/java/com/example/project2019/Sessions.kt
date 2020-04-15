@@ -7,9 +7,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Switch
 import android.widget.Toast
-import androidx.core.content.getSystemService
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,11 +16,9 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.project2019.classes.makes
 import com.example.project2019.adapter.MakesAdapterList
 import kotlinx.android.synthetic.main.fragment_sessions.view.*
-import kotlinx.android.synthetic.main.makes_list.view.*
 import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
-import java.text.FieldPosition
 
 
 class Sessions : Fragment() {
@@ -100,11 +96,20 @@ class Sessions : Fragment() {
             //Если пользователь заходит в приложение 1й раз
             if (raw.getInt(4) == 0) {
 
-                val Etis = Main2Activity.USER
+                val Etis = Main2Activity.ARG
                 val EtisJson = JSONObject(Etis)
+
                 val users = EtisJson.getJSONArray("user")
                 val name = users.getJSONObject(0).get("name")
+
+                val session_id: String = EtisJson.getJSONObject("cookie").get("session_id").toString()
+
                 db.execSQL("UPDATE users SET name = ? WHERE username = ?", arrayOf(name, Main2Activity.USERNAME))
+                val settings = activity!!.baseContext.getSharedPreferences(MainActivity.PERSISTANT_STORAGE_NAME, Context.MODE_PRIVATE)
+                val editor = settings.edit()
+                editor.putString("session_id", session_id)
+                editor.apply()
+
                 val id = raw.getInt(0)
                 val makes = EtisJson.getJSONArray("makes")
 
@@ -144,7 +149,6 @@ class Sessions : Fragment() {
     //Срабатывает по кнопке, обновление оценок
     fun updatesessions(context: Context) {
 
-        val username: String
         val name: String
         val id: Int
 
@@ -152,13 +156,63 @@ class Sessions : Fragment() {
         val raw = db.rawQuery("select * from users where username = ?", arrayOf(Main2Activity.USERNAME))
         raw.moveToFirst()
 
-        username = raw.getString(2)
+        val settings = activity!!.baseContext.getSharedPreferences(MainActivity.PERSISTANT_STORAGE_NAME, Context.MODE_PRIVATE)
+        val session_id = settings.getString("session_id", null) ?: ""
+
         name = raw.getString(1)
         id = raw.getInt(0)
 
-        connect("https://crmproject2019.herokuapp.com/api/etis/updatesession", username, name, id, context)
+        connect("https://crmproject2019.herokuapp.com/api/etis/updatesession", name, id, context, session_id)
 
         db.close()
+    }
+
+    private fun updatecookie() {
+        val username: String = Main2Activity.USERNAME
+        val password: String
+
+        val settings = activity!!.baseContext.getSharedPreferences(MainActivity.PERSISTANT_STORAGE_NAME, Context.MODE_PRIVATE)
+        password = settings.getString("password", null).toString()
+
+        val formBody = FormBody.Builder()
+            .add("username", username)
+            .add("password", password)
+            .build()
+        val request = Request.Builder()
+            .url("https://crmproject2019.herokuapp.com/api/etis/updatecookie")
+            .post(formBody)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onResponse(call: okhttp3.Call, response: Response) {
+                if (response.code() == 200) {
+                    val Etis = response.body()?.string().toString()
+                    val EtisJson = JSONObject(Etis)
+
+                    val cookie = EtisJson.getJSONArray("cookie")
+                    val session_id: String = cookie.getJSONObject(0).get("session_id").toString()
+
+                    val settings = activity!!.baseContext.getSharedPreferences(MainActivity.PERSISTANT_STORAGE_NAME, Context.MODE_PRIVATE)
+                    val editor = settings.edit()
+
+                    editor.putString("session_id", session_id)
+                    editor.apply()
+                }
+                else{
+                    updatecookie()
+                    runOnUiThread {
+                        Toast.makeText(context, "Введен старый пароль! Пожалуйста, перезайдите в приложение", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+
+            override fun onFailure(call: okhttp3.Call, e: IOException) {
+                Log.d("Requests", "Service FAIL. ALARM")
+                runOnUiThread {
+                    Toast.makeText(context, "Сервис недоступен, попробуйте позже", Toast.LENGTH_SHORT).show()
+                }
+            }
+        })
     }
 
     //Обновляем оценоки пользователя (вызывается в методе connect)
@@ -193,16 +247,15 @@ class Sessions : Fragment() {
 
         val fragmentManager: FragmentManager =activity!!.supportFragmentManager
         val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
-        fragmentTransaction.remove(fragment_sessions)
         fragmentTransaction.replace(R.id.fr_sessions, fragment_sessions)
 
         fragmentTransaction.commit()
     }
 
     //Соединение с сайтом (вызывается в методе updatesessions)
-    private fun connect(url: String, username: String, name: String, id: Int, context: Context) {
+    private fun connect(url: String, name: String, id: Int, context: Context, cookie: String) {
         val formBody = FormBody.Builder()
-            .add("username", username)
+            .add("cookie", cookie)
             .add("name", name)
             .build()
         val request = Request.Builder()
@@ -217,8 +270,10 @@ class Sessions : Fragment() {
                     updatesessionsbd(Etis, id, context)
                 }
                 else{
+                    updatecookie()
+                    connect(url, name, id, context, cookie)
                     runOnUiThread {
-                        Toast.makeText(context, "Неизвестная ошибка", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Попробуйте чуть позже", Toast.LENGTH_SHORT).show()
                     }
                 }
             }

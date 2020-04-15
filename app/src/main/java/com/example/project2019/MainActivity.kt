@@ -1,31 +1,18 @@
 package com.example.project2019
 
-import android.app.DownloadManager
 import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
-import android.os.AsyncTask
-import android.telecom.Call
 import android.util.Log
 import okhttp3.*
-import java.io.File
 import java.io.IOException
-import javax.xml.transform.Templates
 import okhttp3.FormBody
-import okhttp3.RequestBody
-import java.nio.charset.Charset
-import android.widget.EditText
-import androidx.core.content.ContextCompat.startActivity
 import kotlinx.android.synthetic.main.activity_main.*
-import android.database.sqlite.SQLiteDatabase
 import com.example.project2019.Main2Activity.Companion.USERNAME
-import android.content.SharedPreferences
-import android.content.SharedPreferences.Editor
-import android.R.id.edit
-import android.R.id.edit
+import com.example.project2019.Main2Activity.Companion.ARG
 
 
 class MainActivity : AppCompatActivity() {
@@ -50,6 +37,7 @@ class MainActivity : AppCompatActivity() {
             val secondwindow = Intent(this@MainActivity, Main2Activity::class.java)
             secondwindow.putExtra(USERNAME, is_aut)
             USERNAME = is_aut
+            ARG = "true"
             startActivity(secondwindow)
         }
 
@@ -68,12 +56,19 @@ class MainActivity : AppCompatActivity() {
         val username = username.text.toString()
         val password = password.text.toString()
         val db = baseContext.openOrCreateDatabase("Etis.db", Context.MODE_PRIVATE, null)
+        val settings = getSharedPreferences(PERSISTANT_STORAGE_NAME, Context.MODE_PRIVATE)
+        val editor = settings.edit()
 
         val query = db.rawQuery("select * from users where username = ?;", arrayOf(username))
-        if (query.moveToFirst())
-            db.execSQL("UPDATE users SET password = ? WHERE username = ?", arrayOf(password, username))
-        else
+        if (query.moveToFirst()) {
+            editor.putString("password", password)
+            editor.apply()
+        }
+        else {
             db.execSQL("INSERT INTO users (username, password) VALUES (?, ?)", arrayOf(username, password))
+            editor.putString("password", password)
+            editor.apply()
+        }
 
         db.close()
 

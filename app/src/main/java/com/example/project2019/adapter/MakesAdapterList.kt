@@ -1,24 +1,16 @@
 package com.example.project2019.adapter
 
 import android.content.Context
-import android.content.res.ColorStateList
-import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.Rect
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Adapter
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
-import androidx.appcompat.view.menu.ActionMenuItemView
 import androidx.recyclerview.widget.RecyclerView
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.example.project2019.Main2Activity
 import com.example.project2019.R
 import com.example.project2019.classes.makes
-import com.google.android.material.behavior.SwipeDismissBehavior
 
 class MakesAdapterList(private val context: Context, private val makes: List<makes>): RecyclerView.Adapter<MakesAdapterList.ViewHolder>() {
 

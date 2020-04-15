@@ -14,7 +14,6 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
-        <uses-library android:name="org.apache.http.legacy" android:required="false"/>
         <activity android:name=".Main2Activity" android:label="Оценки" android:screenOrientation="portrait">
         </activity>
         <activity android:name=".MainActivity" android:label="@string/app_name" android:screenOrientation="portrait">

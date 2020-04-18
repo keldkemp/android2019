@@ -3,12 +3,17 @@ package com.example.project2019
 import android.content.Context
 import android.content.DialogInterface
 import android.graphics.Color
+import android.graphics.ColorFilter
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.Message
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -22,9 +27,10 @@ class Menu : Fragment() {
     private var name = ""
     private val client = OkHttpClient()
 
-    fun Fragment?.runOnUiThread(action: () -> Unit) {
-        this ?: return
-        activity?.runOnUiThread(action)
+    val mHandler = object : Handler(Looper.getMainLooper()) {
+        override fun handleMessage(message: Message) {
+            Toast.makeText(Main2Activity.CONTEXT, message.obj.toString(), Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,8 +75,7 @@ class Menu : Fragment() {
     }
 
     //Смена пароля на сайте (вызывается в методе changepassword)
-    private fun changepassworddb(username: String, name: String, old_password: String, new_password: String, context: Context) {
-        //TODO: Вызов АПИ
+    private fun changepassworddb(username: String, name: String, old_password: String, new_password: String, context: Context, btm: Button) {
 
         val formBody = FormBody.Builder()
             .add("username", username)
@@ -91,37 +96,41 @@ class Menu : Fragment() {
                     editor.putString("password", new_password)
                     editor.apply()
 
-                    runOnUiThread {
-                        Toast.makeText(context, "Пароль изменен", Toast.LENGTH_SHORT).show()
-                    }
+                    btm.isClickable = true
+
+                    val msg = mHandler.obtainMessage(1, "Пароль изменен")
+                    msg.sendToTarget()
                 }
                 else if (response.code() == 403){
-                    runOnUiThread {
-                        Toast.makeText(context, "Введен неверно старый пароль", Toast.LENGTH_SHORT).show()
-                    }
+
+                    val msg = mHandler.obtainMessage(1, "Введен неверно старый пароль")
+                    msg.sendToTarget()
+                    btm.isClickable = true
                 }
                 else if (response.code() == 402){
-                    runOnUiThread {
-                        Toast.makeText(context, "В данный момент пароль изменить нельзя", Toast.LENGTH_SHORT).show()
-                    }
+
+                    val msg = mHandler.obtainMessage(1, "В данный момент пароль изменить нельзя")
+                    msg.sendToTarget()
+                    btm.isClickable = true
                 }
                 else if (response.code() == 401) {
-                    runOnUiThread {
-                        Toast.makeText(context, "Вы не заполнили одно из полей", Toast.LENGTH_SHORT).show()
-                    }
+
+                    val msg = mHandler.obtainMessage(1, "Вы не заполнили одно из полей")
+                    msg.sendToTarget()
+                    btm.isClickable = true
                 }
                 else {
-                    runOnUiThread {
-                        Toast.makeText(context, "Неизвестная ошибка", Toast.LENGTH_SHORT).show()
-                    }
+                    val msg = mHandler.obtainMessage(1, "Неизвестная ошибка")
+                    msg.sendToTarget()
+                    btm.isClickable = true
                 }
             }
 
             override fun onFailure(call: okhttp3.Call, e: IOException) {
-                Log.d("Requests", "Service FAIL. ALARM")
-                runOnUiThread {
-                    Toast.makeText(context, "Сервис недоступен, попробуйте позже", Toast.LENGTH_SHORT).show()
-                }
+                Log.d("ChangePassword", "ChangePassword - Fatal-Error, Service is down")
+                btm.isClickable = true
+                val msg = mHandler.obtainMessage(1, "Сервис недоступен, попробуйте позже")
+                msg.sendToTarget()
             }
         })
     }
@@ -129,6 +138,7 @@ class Menu : Fragment() {
     //Срабатывает по кнопке, смена пароля
     private fun changepassword(view: View) {
 
+        val btm = view.btm_change_password
         val username: String = Main2Activity.USERNAME
         var old_password: String
         var new_password: String
@@ -158,9 +168,17 @@ class Menu : Fragment() {
                 old_password = old_password_view.text.toString()
                 new_password = new_password_view.text.toString()
 
-                changepassworddb(username, name, old_password, new_password, view.context)
+                if (old_password.isEmpty() || new_password.isEmpty()){
+                    val msg = mHandler.obtainMessage(1, "Заполните оба поля")
+                    msg.sendToTarget()
+                } else {
 
-                dialog.cancel()
+                    btm.isClickable = false
+
+                    changepassworddb(username, name, old_password, new_password, view.context, btm)
+
+                    dialog.cancel()
+                }
             }
             .setNegativeButton("Отмена",
                 object: DialogInterface.OnClickListener {

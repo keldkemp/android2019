@@ -2,6 +2,7 @@ package com.example.project2019
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -68,6 +69,7 @@ class timetable : Fragment() {
         }
 
         web.loadUrl(url)
+        Log.d("Web", "OK")
 
         web.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {

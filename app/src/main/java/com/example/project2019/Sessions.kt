@@ -3,18 +3,15 @@ package com.example.project2019
 import android.content.Context
 import android.os.*
 import android.util.Log
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.view.Menu
 import android.widget.Toast
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentTransaction
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.example.project2019.classes.makes
 import com.example.project2019.adapter.MakesAdapterList
+import com.example.project2019.classes.makes
 import kotlinx.android.synthetic.main.fragment_sessions.view.*
 import okhttp3.*
 import org.json.JSONObject
@@ -30,8 +27,17 @@ class Sessions : Fragment() {
         activity?.runOnUiThread(action)
     }
 
+    private val mHandler = object : Handler(Looper.getMainLooper()) {
+        override fun handleMessage(message: Message) {
+            Toast.makeText(Main2Activity.CONTEXT, message.obj.toString(), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private val refreshHandler = Handler(Looper.getMainLooper())
+
     override fun onCreate(savedInstanceState: Bundle?) {
         retainInstance = true
+        setHasOptionsMenu(true)
         super.onCreate(savedInstanceState)
     }
 
@@ -76,12 +82,36 @@ class Sessions : Fragment() {
                     Toast.makeText(View.context, "Начинаю обновлять оценки", Toast.LENGTH_SHORT).show()
                 }
 
-                updatesessions(View.context)
-                listener.isRefreshing = false
+                updatesessions(View.context, listener)
+                //listener.isRefreshing = false
             }
         })
 
         return View
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        Main2Activity.MENU = menu
+        inflater.inflate(R.menu.menu_sessions, menu)
+        val db = activity!!.baseContext.openOrCreateDatabase("Etis.db", Context.MODE_PRIVATE, null)
+        val raw = db.rawQuery("select * from users where username = ?", arrayOf(Main2Activity.USERNAME))
+        raw.moveToFirst()
+
+        if (raw.getInt(5) == 0 && Main2Activity.FLAG_MENU == null)
+            menu.findItem(R.id.menu_session).setVisible(false)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        var FragmentSelect: Fragment = makes_in_trem()
+        when (item.itemId) {
+            R.id.menu_session -> {
+                FragmentSelect = makes_in_trem()
+            }
+        }
+            activity!!.supportFragmentManager.beginTransaction().replace(R.id.fr_sessions, FragmentSelect).commit()
+
+        return super.onOptionsItemSelected(item)
     }
 
     fun setMakes(): List<makes> {
@@ -93,14 +123,20 @@ class Sessions : Fragment() {
 
         if (raw.moveToFirst()) {
 
+            if (raw.getInt(5) == 0 && raw.getInt(4) == 1 && Main2Activity.FLAG_MENU == null)
+                Main2Activity().connect("https://crmproject2019.herokuapp.com/api/etis/getmakesintrem", raw.getString(1).toString())
+
+
             //Если пользователь заходит в приложение 1й раз
             if (raw.getInt(4) == 0) {
-
                 val Etis = Main2Activity.ARG
+                Main2Activity.FLAG = "true"
                 val EtisJson = JSONObject(Etis)
 
                 val users = EtisJson.getJSONArray("user")
                 val name = users.getJSONObject(0).get("name")
+
+                Main2Activity().connect("https://crmproject2019.herokuapp.com/api/etis/getmakesintrem", name.toString())
 
                 val session_id: String = EtisJson.getJSONObject("cookie").get("session_id").toString()
 
@@ -147,7 +183,7 @@ class Sessions : Fragment() {
     }
 
     //Срабатывает по кнопке, обновление оценок
-    fun updatesessions(context: Context) {
+    fun updatesessions(context: Context, listener: SwipeRefreshLayout) {
 
         val name: String
         val id: Int
@@ -162,12 +198,13 @@ class Sessions : Fragment() {
         name = raw.getString(1)
         id = raw.getInt(0)
 
-        connect("https://crmproject2019.herokuapp.com/api/etis/updatesession", name, id, context, session_id)
+        connect("https://crmproject2019.herokuapp.com/api/etis/updatesession", name, id, context, session_id, listener)
+        connectMakes("https://crmproject2019.herokuapp.com/api/etis/updatemakesintrem", name, id, context, session_id, listener)
 
         db.close()
     }
 
-    private fun updatecookie() {
+    private fun updatecookie(context: Context) {
         val username: String = Main2Activity.USERNAME
         val password: String
 
@@ -189,17 +226,15 @@ class Sessions : Fragment() {
                     val Etis = response.body()?.string().toString()
                     val EtisJson = JSONObject(Etis)
 
-                    val cookie = EtisJson.getJSONArray("cookie")
-                    val session_id: String = cookie.getJSONObject(0).get("session_id").toString()
+                    val session_id: String = EtisJson.getJSONObject("cookie").get("session_id").toString()
 
-                    val settings = activity!!.baseContext.getSharedPreferences(MainActivity.PERSISTANT_STORAGE_NAME, Context.MODE_PRIVATE)
+                    val settings = context.getSharedPreferences(MainActivity.PERSISTANT_STORAGE_NAME, Context.MODE_PRIVATE)
                     val editor = settings.edit()
 
                     editor.putString("session_id", session_id)
                     editor.apply()
                 }
                 else{
-                    updatecookie()
                     runOnUiThread {
                         Toast.makeText(context, "Введен старый пароль! Пожалуйста, перезайдите в приложение", Toast.LENGTH_SHORT).show()
                     }
@@ -215,9 +250,9 @@ class Sessions : Fragment() {
         })
     }
 
-    //Обновляем оценоки пользователя (вызывается в методе connect)
+    //Обновляем оценки пользователя (вызывается в методе connect)
     private fun updatesessionsbd(Etis: String, id: Int, context: Context) {
-        val db = activity!!.baseContext.openOrCreateDatabase("Etis.db", Context.MODE_PRIVATE, null)
+        val db = context.openOrCreateDatabase("Etis.db", Context.MODE_PRIVATE, null)
 
         db.execSQL("DELETE FROM makes WHERE user_id= ?", arrayOf(id))
 
@@ -238,22 +273,60 @@ class Sessions : Fragment() {
             )
         }
         db.close()
+        val msg = mHandler.obtainMessage(1, "Оценки успешно обновлены")
+        msg.sendToTarget()
+        Log.d("sessions", "sessions - OK")
+    }
 
-        runOnUiThread {
-            Toast.makeText(context, "Оценки успешно обновлены", Toast.LENGTH_SHORT).show()
+    //Обновляем оценки в Триместре пользователя (вызывается в методе connectMakes)
+    private fun updatemakesbd(Etis: String, id: Int, context: Context) {
+        val db = context.openOrCreateDatabase("Etis.db", Context.MODE_PRIVATE, null)
+
+        val EtisJson = JSONObject(Etis)
+        val makes = EtisJson.getJSONArray("make")
+        val trem = makes.getJSONObject(0).get("trem")
+
+        db.execSQL("DELETE FROM makesInTrem WHERE user_id= ? and trem= ?", arrayOf(id, trem))
+
+        for (objct in 0 until makes.length()) {
+            val obj = makes.getJSONObject(objct)
+            val discipline = obj.get("discipline").toString()
+            val tema = obj.get("tema").toString()
+            val type_of_work = obj.get("type_of_work").toString()
+            val type_of_control = obj.get("type_of_control").toString()
+            val make = obj.get("make").toString()
+            val passing_score = obj.get("passing_score").toString()
+            val max_score = obj.get("max_score").toString()
+            val date = obj.get("date").toString()
+            val teacher = obj.get("teacher").toString()
+            val trem = obj.get("trem").toString()
+
+            db.execSQL(
+                "INSERT INTO makesInTrem (discipline, tema, type_of_work, type_of_control, " +
+                        "make, passing_score, max_score, date, teacher, trem, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                arrayOf(
+                    discipline,
+                    tema,
+                    type_of_work,
+                    type_of_control,
+                    make,
+                    passing_score,
+                    max_score,
+                    date,
+                    teacher,
+                    trem,
+                    id
+                )
+            )
         }
-
-        val fragment_sessions = Sessions()
-
-        val fragmentManager: FragmentManager =activity!!.supportFragmentManager
-        val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
-        fragmentTransaction.replace(R.id.fr_sessions, fragment_sessions)
-
-        fragmentTransaction.commit()
+        db.close()
+        val msg = mHandler.obtainMessage(1, "Оценки успешно обновлены")
+        msg.sendToTarget()
+        Log.d("makesInTrem", "MakesInTrem - OK")
     }
 
     //Соединение с сайтом (вызывается в методе updatesessions)
-    private fun connect(url: String, name: String, id: Int, context: Context, cookie: String) {
+    private fun connect(url: String, name: String, id: Int, context: Context, cookie: String, listener: SwipeRefreshLayout) {
         val formBody = FormBody.Builder()
             .add("cookie", cookie)
             .add("name", name)
@@ -270,19 +343,88 @@ class Sessions : Fragment() {
                     updatesessionsbd(Etis, id, context)
                 }
                 else{
-                    updatecookie()
-                    connect(url, name, id, context, cookie)
-                    runOnUiThread {
-                        Toast.makeText(context, "Попробуйте чуть позже", Toast.LENGTH_SHORT).show()
-                    }
+                    activity!!.finish()
+                    val settings = activity!!.baseContext.getSharedPreferences(MainActivity.PERSISTANT_STORAGE_NAME, Context.MODE_PRIVATE)
+                    val editor = settings.edit()
+                    editor.putString("User", null)
+                    editor.apply()
+
+                    val msg = mHandler.obtainMessage(1, "Пожалуйста, авторизайтесь заново")
+                    msg.sendToTarget()
+
+                    refreshHandler.post(object: Runnable {
+                        override fun run() {
+                            listener.isRefreshing = false
+                        }
+                    })
                 }
             }
 
             override fun onFailure(call: okhttp3.Call, e: IOException) {
                 Log.d("Requests", "Service FAIL. ALARM")
-                runOnUiThread {
-                    Toast.makeText(context, "Сервис недоступен, попробуйте позже", Toast.LENGTH_SHORT).show()
+                val msg = mHandler.obtainMessage(1, "Сервис недоступен, попробуйте позже")
+                msg.sendToTarget()
+
+                refreshHandler.post(object: Runnable {
+                    override fun run() {
+                        listener.isRefreshing = false
+                    }
+                })
+            }
+        })
+    }
+
+    //Соединение с сайтом (вызывается в методе updatesessions)
+    private fun connectMakes(url: String, name: String, id: Int, context: Context, cookie: String, listener: SwipeRefreshLayout) {
+        val formBody = FormBody.Builder()
+            .add("cookie", cookie)
+            .add("name", name)
+            .build()
+        val request = Request.Builder()
+            .url(url)
+            .post(formBody)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onResponse(call: okhttp3.Call, response: Response) {
+                if (response.code() == 200) {
+                    val Etis = response.body()?.string().toString()
+                    updatemakesbd(Etis, id, context)
+
+                    refreshHandler.post(object: Runnable {
+                        override fun run() {
+                            listener.isRefreshing = false
+                        }
+                    })
                 }
+                else{
+                    activity!!.finish()
+                    val settings = activity!!.baseContext.getSharedPreferences(MainActivity.PERSISTANT_STORAGE_NAME, Context.MODE_PRIVATE)
+                    val editor = settings.edit()
+                    editor.putString("User", null)
+                    editor.apply()
+
+                    val msg = mHandler.obtainMessage(1, "Пожалуйста, авторизайтесь заново")
+                    msg.sendToTarget()
+
+                    refreshHandler.post(object: Runnable {
+                        override fun run() {
+                            listener.isRefreshing = false
+                        }
+                    })
+                }
+            }
+
+            override fun onFailure(call: okhttp3.Call, e: IOException) {
+                Log.d("Requests", "Service FAIL. ALARM")
+                val msg = mHandler.obtainMessage(1, "Сервис недоступен, попробуйте позже")
+                msg.sendToTarget()
+
+                refreshHandler.post(object: Runnable {
+                    override fun run() {
+                        listener.isRefreshing = false
+                    }
+                })
             }
         })
     }

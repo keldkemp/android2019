@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:id="@+id/makes_trem_layout">
+
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white">
+
+        <TextView
+                android:id="@+id/makes_list_trem_discipline"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:color="@android:color/black"/>
+
+        <TextView
+                android:id="@+id/makes_list_trem_tema"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:color="#383030"/>
+
+        <TextView
+                android:id="@+id/makes_list_trem_passing_score"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:color="@android:color/black"/>
+
+        <TextView
+                android:id="@+id/makes_list_trem_make"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:color="@android:color/black"/>
+
+        <TextView
+                android:id="@+id/makes_list_trem_max_score"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:color="@android:color/black"/>
+
+        <TextView
+                android:id="@+id/makes_list_trem_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+                android:id="@+id/makes_list_trem_teacher"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+</LinearLayout>

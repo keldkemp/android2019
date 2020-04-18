@@ -1,29 +1,23 @@
 package com.example.project2019
 
 import android.content.Context
-import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
-import kotlinx.android.synthetic.*
-import kotlinx.android.synthetic.main.fragment_timetable.*
-import java.net.URLEncoder
 import android.webkit.WebViewClient
-import android.widget.Toast
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_timetable.view.*
-import java.util.*
 
 
 class timetable : Fragment() {
 
     companion object {
         private var USERNAME = ""
-        private var PASSWORD = ""
+        private var SESSION_ID = ""
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,6 +36,8 @@ class timetable : Fragment() {
 
         val web: WebView = View.web_timetable
 
+        val url = "https://student.psu.ru/pls/stu_cus_et/stu.timetable"
+
         //Разрешаем zoom, JS
         web.settings.builtInZoomControls = true
         web.settings.setSupportZoom(true)
@@ -49,25 +45,31 @@ class timetable : Fragment() {
         web.settings.javaScriptEnabled = true
 
         //При первом посещении данного фрагмента
-        if (USERNAME == "" || PASSWORD == "") {
-            val db = activity!!.baseContext.openOrCreateDatabase("Etis.db", Context.MODE_PRIVATE, null)
-            val raw = db.rawQuery("select * from users where username = ?", arrayOf(Main2Activity.USERNAME))
-            raw.moveToFirst()
+        if (USERNAME == "" || SESSION_ID == "") {
 
-            USERNAME = raw.getString(2)
-            PASSWORD = raw.getString(3)
+            val cookieManager = android.webkit.CookieManager.getInstance()
+            cookieManager.setAcceptCookie(true)
 
-            val url = "https://student.psu.ru/pls/stu_cus_et/stu.login"
-            val postdata = "p_username=" + URLEncoder.encode(USERNAME, "windows-1251") + "&p_password=" + URLEncoder.encode(
-                PASSWORD, "UTF-8")
+            val settings = activity!!.baseContext.getSharedPreferences(MainActivity.PERSISTANT_STORAGE_NAME, Context.MODE_PRIVATE)
+            val session_id = settings.getString("session_id", null) ?: ""
+
+
+            USERNAME = Main2Activity.USERNAME
+            SESSION_ID = session_id
+
+            //val postdata = "p_username=" + URLEncoder.encode(USERNAME, "windows-1251") + "&p_password=" + URLEncoder.encode(
+            //    SESSION_ID, "UTF-8")
             //{'p_username': username.encode('windows-1251'), 'p_password': password}
 
-            web.postUrl(url, postdata.toByteArray())
+            cookieManager.setCookie(url, "session_id=$session_id")
 
-            Thread.sleep(1000)
+            //web.postUrl(url, postdata.toByteArray())
+
+            //Thread.sleep(1000)
         }
 
-        web.loadUrl("https://student.psu.ru/pls/stu_cus_et/stu.timetable")
+        web.loadUrl(url)
+        Log.d("Web", "OK")
 
         web.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {

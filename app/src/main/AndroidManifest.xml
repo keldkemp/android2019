@@ -2,7 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:tools="http://schemas.android.com/tools"
           package="com.example.project2019"
-          tools:ignore="ImpliedTouchscreenHardware,MissingLeanbackLauncher,MissingLeanbackSupport">
+            android:versionCode="2"
+            android:versionName="1.2"
+          tools:ignore="GradleOverrides,ImpliedTouchscreenHardware,MissingLeanbackLauncher,MissingLeanbackSupport">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
@@ -11,10 +13,9 @@
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
-            android:roundIcon="@mipmap/ic_launcher_round"
+            android:roundIcon="@mipmap/ic_launcher_foreground"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
-        <uses-library android:name="org.apache.http.legacy" android:required="false"/>
         <activity android:name=".Main2Activity" android:label="Оценки" android:screenOrientation="portrait">
         </activity>
         <activity android:name=".MainActivity" android:label="@string/app_name" android:screenOrientation="portrait">

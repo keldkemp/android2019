@@ -18,6 +18,7 @@ import com.example.project2019.classes.MakesInTrem
 import kotlinx.android.synthetic.main.fragment_makes_in_trem.view.*
 import okhttp3.*
 import org.json.JSONObject
+import java.lang.NumberFormatException
 
 
 class makes_in_trem : Fragment() {
@@ -197,6 +198,9 @@ class makes_in_trem : Fragment() {
         val makes =
             db.rawQuery("SELECT * FROM makesInTrem WHERE user_id = ?", arrayOf(raw.getString(0)))
 
+        var count: Double = 0.0
+        var i: Int = 0
+
         //Заполняем массив оценками и помещаем в адаптер
         if (makes.moveToFirst()) {
             do {
@@ -212,6 +216,31 @@ class makes_in_trem : Fragment() {
             } while (makes.moveToNext())
         }
         db.close()
+
+        if (makes.moveToFirst()) {
+            do {
+
+                if (i != 0 && makes.getString(1) != makes_list[i-1].getDiscipline()) {
+                    makes_list[i-1].setAllScore(count)
+                    count = 0.0
+                    makes_list[i-1].setIsAllScore(true)
+                }
+
+                try {
+                    if (makes.getString(7) != "0")
+                        count += makes.getString(5).toDouble()
+                } catch (e: NumberFormatException) {}
+
+
+                if (i == makes_list.size - 1) {
+                    makes_list[i].setAllScore(count)
+                    makes_list[i].setIsAllScore(true)
+                    break
+                }
+                i += 1
+
+            } while (makes.moveToNext())
+        }
 
         return makes_list
     }

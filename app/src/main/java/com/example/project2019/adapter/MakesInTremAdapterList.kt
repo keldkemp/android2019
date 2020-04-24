@@ -1,6 +1,7 @@
 package com.example.project2019.adapter
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Rect
 import android.view.LayoutInflater
@@ -28,7 +29,7 @@ class MakesInTremAdapterList(private val context: Context, private var makes: Li
     }
 
     fun createListShow(trem: String, discipline: String): List<MakesInTrem> {
-        var listShow = ArrayList<MakesInTrem>()
+        val listShow = ArrayList<MakesInTrem>()
         var i = 0
 
         while (i < makes.size) {
@@ -42,9 +43,17 @@ class MakesInTremAdapterList(private val context: Context, private var makes: Li
                         listShow.add(makes.get(i))
                     }
             }
+            val passing_score = makes.get(i).getPassingScore().toDouble()
+            var make: Double = 0.0
+
+            makes.get(i).getMake()
+            if (makes.get(i).getMake() != "")
+                make = makes.get(i).getMake().toDouble()
+
+            if (passing_score > make)
+                makes.get(i).setIsBadMake(true)
             i++
         }
-
         return listShow
     }
 
@@ -64,6 +73,9 @@ class MakesInTremAdapterList(private val context: Context, private var makes: Li
         holder.make.text = String.format(context.getString(R.string.make), makes[position].getMake())
         holder.make.setTextColor(Color.BLACK)
 
+        if (makes[position].isBadMake())
+            holder.make.setTextColor(Color.RED)
+
 
         holder.max_score.text = String.format(context.getString(R.string.max_score), makes[position].getMaxScore())
         holder.max_score.setTextColor(Color.BLACK)
@@ -73,6 +85,13 @@ class MakesInTremAdapterList(private val context: Context, private var makes: Li
 
         holder.teacher.text = String.format(context.getString(R.string.default_teacher), makes[position].getTeacher())
         holder.teacher.setTextColor(Color.BLACK)
+        holder.all_score.visibility = TextView.GONE
+
+        if (makes[position].isAllScore()){
+            holder.all_score.text = String.format(context.getString(R.string.make_in_trem_all),makes[position].getAllScore().toString())
+            holder.all_score.visibility = TextView.VISIBLE
+            holder.all_score.setTextColor(Color.BLACK)
+        }
     }
 
     class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
@@ -84,6 +103,7 @@ class MakesInTremAdapterList(private val context: Context, private var makes: Li
         var date: TextView
         var layout: LinearLayout
         var teacher: TextView
+        var all_score: TextView
 
         init {
             discipline = itemView.findViewById(R.id.makes_list_trem_discipline)
@@ -94,6 +114,7 @@ class MakesInTremAdapterList(private val context: Context, private var makes: Li
             date = itemView.findViewById(R.id.makes_list_trem_date)
             layout = itemView.findViewById(R.id.makes_trem_layout)
             teacher = itemView.findViewById(R.id.makes_list_trem_teacher)
+            all_score = itemView.findViewById(R.id.makes_list_trem_all_score)
         }
     }
 

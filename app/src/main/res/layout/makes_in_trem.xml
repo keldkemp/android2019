@@ -54,4 +54,16 @@
                 android:layout_height="wrap_content"/>
 
     </LinearLayout>
+
+    <TextView
+            android:id="@+id/makes_list_trem_all_score"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:visibility="gone"
+            android:background="@android:color/holo_green_dark"
+            android:padding="5dp">
+
+    </TextView>
+
 </LinearLayout>

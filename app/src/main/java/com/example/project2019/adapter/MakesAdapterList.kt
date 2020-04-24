@@ -23,6 +23,25 @@ class MakesAdapterList(private val context: Context, private val makes: List<mak
         return ViewHolder(itemView)
     }
 
+    fun createListShow(trem: String): List<makes> {
+        var listShow = ArrayList<makes>()
+        var i = 0
+
+        while (i < makes.size) {
+            if (trem == "Оценки за все время") {
+                listShow.add(makes.get(i))
+            }
+            else {
+                if (makes.get(i).getTrem() == trem) {
+                    listShow.add(makes.get(i))
+                }
+            }
+            i++
+        }
+
+        return listShow
+    }
+
     override fun onBindViewHolder(holder: MakesAdapterList.ViewHolder, position: Int) {
         holder.discipline.text = makes[position].getDiscipline()
         holder.discipline.setTextColor(Color.BLACK)

@@ -37,6 +37,8 @@ class Main2Activity : AppCompatActivity() {
         editor.putString("User", null)
         editor.apply()
         finish()
+
+        Log.d("Exit", "User is Logout")
     }
 
     override fun onStart() {
@@ -70,6 +72,8 @@ class Main2Activity : AppCompatActivity() {
         bottomNavigationView.setOnNavigationItemSelectedListener(naviListener)
 
         supportFragmentManager.beginTransaction().replace(R.id.fr_sessions, Sessions()).commit()
+
+        Log.d("Main2Activity", "Main2Activity is create")
 
     }
 

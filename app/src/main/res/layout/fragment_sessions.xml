@@ -5,6 +5,18 @@
              android:layout_height="match_parent"
              tools:context=".Sessions">
 
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        <Spinner
+                android:id="@+id/spinner_sessions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+        </Spinner>
+
+
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -19,5 +31,7 @@
         </androidx.recyclerview.widget.RecyclerView>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    </LinearLayout>
 
 </RelativeLayout>

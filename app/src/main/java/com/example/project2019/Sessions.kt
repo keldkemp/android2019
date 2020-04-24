@@ -5,6 +5,8 @@ import android.os.*
 import android.util.Log
 import android.view.*
 import android.view.Menu
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -21,6 +23,7 @@ import java.io.IOException
 class Sessions : Fragment() {
 
     private val client = OkHttpClient()
+    private var FLAG_CHECK_REFRESH: Boolean = false
 
     fun Fragment?.runOnUiThread(action: () -> Unit) {
         this ?: return
@@ -48,13 +51,21 @@ class Sessions : Fragment() {
     ): View? {
 
         val View: View = inflater.inflate(R.layout.fragment_sessions, container, false)
+        val spinner = View.spinner_sessions
 
         val make_list: List<makes> = setMakes()
+        val all_trem: ArrayList<String> = getAllTrem()
+
+        val adapt_spinner: ArrayAdapter<String> = ArrayAdapter(View.context, R.layout.support_simple_spinner_dropdown_item, all_trem)
 
         val RecyclerView: RecyclerView = View.sessions_recycle
         RecyclerView.layoutManager = LinearLayoutManager(View.context)
         RecyclerView.setAdapter(MakesAdapterList(View.context ,make_list))
         RecyclerView.addItemDecoration(MakesAdapterList.ItemDecor(5))
+
+        adapt_spinner.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinner.adapter = adapt_spinner
+        spinner.setSelection(all_trem.size - 1)
 
         val listener = View.swipe_refresh_makes
 
@@ -87,6 +98,18 @@ class Sessions : Fragment() {
             }
         })
 
+        spinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                val trem = spinner.selectedItem.toString()
+
+                val change_list: List<makes> = MakesAdapterList(View.context, make_list).createListShow(trem)
+                RecyclerView.setAdapter(MakesAdapterList(View.context, change_list))
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+        }
+
         return View
     }
 
@@ -99,6 +122,8 @@ class Sessions : Fragment() {
 
         if (raw.getInt(5) == 0 && Main2Activity.FLAG_MENU == null)
             menu.findItem(R.id.menu_session).setVisible(false)
+        else
+            FLAG_CHECK_REFRESH = true
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -112,6 +137,25 @@ class Sessions : Fragment() {
             activity!!.supportFragmentManager.beginTransaction().replace(R.id.fr_sessions, FragmentSelect).commit()
 
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun getAllTrem(): ArrayList<String> {
+        val all_trem: ArrayList<String> = ArrayList()
+        val db = activity!!.baseContext.openOrCreateDatabase("Etis.db", Context.MODE_PRIVATE, null)
+        val raw = db.rawQuery("select * from users where username = ?", arrayOf(Main2Activity.USERNAME))
+        raw.moveToFirst()
+
+        val trem = db.rawQuery("SELECT DISTINCT trem FROM makes WHERE user_id = ?", arrayOf(raw.getString(0)))
+
+        if (trem.moveToFirst()) {
+            do {
+                all_trem.add(trem.getString(0))
+            }
+            while (trem.moveToNext())
+
+            all_trem.add("Оценки за все время")
+        }
+        return all_trem
     }
 
     fun setMakes(): List<makes> {

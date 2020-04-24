@@ -41,6 +41,8 @@ class MainActivity : AppCompatActivity() {
             USERNAME = is_aut
             ARG = "true"
             startActivity(secondwindow)
+
+            Log.d("is_aut", "User is aut, Go Main2Activity")
         }
 
         //Создание БД
@@ -53,7 +55,7 @@ class MainActivity : AppCompatActivity() {
                 "FOREIGN KEY (user_id) REFERENCES users(id))")
         db.close()
 
-        Log.d("Create_DB_Activity_1", "Create DB, Create 1 activity")
+        Log.d("Create_DB_Activity_1", "CreateOrOpen DB, Create 1 activity")
 
     }
 
@@ -116,17 +118,21 @@ class MainActivity : AppCompatActivity() {
                     val secondwindow = Intent(this@MainActivity, Main2Activity::class.java)
                     secondwindow.putExtra(Main2Activity.USER, user)
                     startActivity(secondwindow)
+
+                    Log.d("Request:Login", "Login success")
                 }
                 else{
                     btm.isClickable = true
                     runOnUiThread {
                         Toast.makeText(this@MainActivity, "Неверно введен пароль/логин", Toast.LENGTH_SHORT).show()
                     }
+
+                    Log.d("Request:Login", "Login failure")
                 }
                 }
 
             override fun onFailure(call: okhttp3.Call, e: IOException) {
-                Log.d("Requests", "Service FAIL. ALARM")
+                Log.d("Request:Login", "Service FAIL. ALARM")
                 btm.isClickable = true
                 runOnUiThread {
                     Toast.makeText(this@MainActivity, "Сервис недоступен, попробуйте позже", Toast.LENGTH_SHORT).show()
